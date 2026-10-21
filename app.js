@@ -102,14 +102,53 @@
       return '<button class="fchip" data-cat="' + c + '" aria-pressed="' + on + '">' + (on ? "✓ " : "") + esc(C.CATS[c]) + " " + n + "</button>";
     }).join("");
     var nh = cats.filter(function (c) { return hide.indexOf(c) >= 0; }).length;
+    var hb = hiddenBands();
+    var bandChips = C.BANDS.map(function (b) {
+      var n = texts.filter(function (t) { return C.bandOf(coverageOf(t).shown).key === b.key; }).length, on = hb.indexOf(b.key) < 0;
+      return '<button class="fchip" data-band="' + b.key + '" aria-pressed="' + on + '">' + (on ? "✓ " : "") + esc(b.label) + " " + n + "</button>";
+    }).join("");
+    var nb = C.BANDS.filter(function (b) { return hb.indexOf(b.key) >= 0; }).length;
+    var unread = !!state.settings.unreadOnly;
     return '<div class="filters"><div class="frow" role="group" aria-label="Show categories">' + chips + "</div>" +
-      (nh ? '<p class="muted fnote">' + nh + " of " + cats.length + " categories hidden</p>" : "") + "</div>";
+      (nh ? '<p class="muted fnote">' + nh + " of " + cats.length + " categories hidden</p>" : "") +
+      '<div class="frow frow2" role="group" aria-label="Show difficulty levels">' + bandChips + "</div>" +
+      (nb ? '<p class="muted fnote">' + nb + " of " + C.BANDS.length + " difficulty levels hidden</p>" : "") +
+      '<div class="frow frow2"><button class="fchip" data-unread="1" aria-pressed="' + unread + '">' + (unread ? "✓ " : "") + "Unread only</button></div></div>";
+  }
+
+  // Difficulty filter (settings.hideBands) and unread-only toggle (settings.unreadOnly).
+  function hiddenBands() { return state.settings.hideBands || []; }
+  function toggleBand(k) {
+    var h = hiddenBands().slice(), i = h.indexOf(k);
+    if (i >= 0) h.splice(i, 1); else h.push(k);
+    state.settings.hideBands = h; save(); renderLibrary();
+  }
+  function toggleUnread() { state.settings.unreadOnly = !state.settings.unreadOnly; save(); renderLibrary(); }
+
+  // Sort (settings.sort: "library" | "easiest" | "hardest") and the filtered, sorted list of texts.
+  var SORTS = [["library", "Library order"], ["easiest", "Easiest first"], ["hardest", "Hardest first"]];
+  function visibleTexts() {
+    var hide = hiddenCats(), hb = hiddenBands(), unread = !!state.settings.unreadOnly, sort = state.settings.sort || "library";
+    var list = texts.map(function (t, i) { return { t: t, i: i, pct: coverageOf(t).pct }; }).filter(function (x) {
+      return hide.indexOf(x.t.cat) < 0 &&
+        hb.indexOf(C.bandOf(Math.floor(x.pct)).key) < 0 &&
+        !(unread && state.reads[x.t.id]);
+    });
+    if (sort === "easiest") list.sort(function (a, b) { return b.pct - a.pct || a.i - b.i; });
+    else if (sort === "hardest") list.sort(function (a, b) { return a.pct - b.pct || a.i - b.i; });
+    return list.map(function (x) { return x.t; });
+  }
+  function sortHtml() {
+    var cur = state.settings.sort || "library";
+    return '<div class="frow frow2 sortrow"><label class="muted">Sort <select id="sortSel">' +
+      SORTS.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === cur ? " selected" : "") + ">" + s[1] + "</option>"; }).join("") +
+      '</select></label><button class="fchip" id="surprise">🎲 Surprise me</button></div>';
   }
 
   function renderLibrary() {
     current = null; session = null;
     var hide = hiddenCats();
-    var visible = texts.filter(function (t) { return hide.indexOf(t.cat) < 0; });
+    var visible = visibleTexts();
     var cards = visible.map(function (t) {
       var cov = coverageOf(t), r = state.reads[t.id];
       return '<a class="card" href="#text/' + t.id + '">' +
@@ -122,12 +161,18 @@
     view.innerHTML =
       (state.settings.onboarded ? "" : onboardingHtml()) +
       '<p class="intro muted">Pick a text. The percentage is how many of its words you already know.</p>' +
-      filtersHtml(hide) +
-      '<div class="list">' + (cards || '<p class="muted">Every category is hidden. Tap one above to show it again.</p>') + "</div>" +
+      filtersHtml(hide) + sortHtml() +
+      '<div class="list">' + (cards || '<p class="muted">No texts match your filters. Tap a chip above to show more.</p>') + "</div>" +
       '<p class="muted foot">' + (state.settings.onboarded ? '<button class="linkbtn" id="redo">Change my starting level</button> · ' : "") +
       '<button class="linkbtn" id="wipe">Erase all my progress</button></p>';
     var redo = $("#redo");
     if (redo) redo.onclick = function () { state.settings.onboarded = false; save(); renderLibrary(); };
+    $("#sortSel").onchange = function () { state.settings.sort = this.value; save(); renderLibrary(); };
+    $("#surprise").onclick = function () {
+      var v = visibleTexts();
+      if (!v.length) { toast("No texts match your filters, so there's nothing to pick from."); return; }
+      location.hash = "text/" + v[Math.floor(Math.random() * v.length)].id;
+    };
     $("#wipe").onclick = function () {
       if (!confirm("Erase ALL your progress on this device? This can't be undone.")) return;
       state = C.newState();
@@ -141,7 +186,10 @@
     var b = e.target.closest ? e.target.closest("[data-start]") : null;
     if (b) { applyStart(parseInt(b.dataset.start, 10)); return; }
     var c = e.target.closest ? e.target.closest("[data-cat]") : null;
-    if (c) toggleCat(c.dataset.cat);
+    if (c) { toggleCat(c.dataset.cat); return; }
+    var bd = e.target.closest ? e.target.closest("[data-band]") : null;
+    if (bd) { toggleBand(bd.dataset.band); return; }
+    if (e.target.closest && e.target.closest("[data-unread]")) toggleUnread();
   });
 
   // ---------- Reader ----------

@@ -13,7 +13,9 @@ Static site for GitHub Pages (plain HTML/CSS/JS, no build). Reading-first practi
 
 ## Status
 
-Last updated: 2026-10-21. Steps 1 to 6, 5b and 7a done. Built so far:
+Last updated: 2026-10-21. Steps 1 to 6, 5b, 7a, 7b and 7c done. Built so far:
+- 7c: `SORTS`, `visibleTexts()` (filters + sort, used by `renderLibrary` and Surprise me), `sortHtml()` in app.js; sort saved as `state.settings.sort` (library / easiest / hardest, ties keep library order); "🎲 Surprise me" opens a random visible text (toast if none). Syntax-checked only. Library page is now complete.
+- 7b: difficulty chips (`hiddenBands`, `toggleBand`, saved as `state.settings.hideBands`; counts are live from the user's own words) and an "Unread only" chip (`toggleUnread`, `state.settings.unreadOnly`) in `filtersHtml`; `renderLibrary` filters by category, band and unread. Handled in the same `view` click listener via `data-band` / `data-unread`; `.frow2` CSS adds spacing. Syntax-checked and unit tests run; not browser-tested. For 7c, add sort + Surprise me in the same filters area.
 - 7a: category chips above the library list (`filtersHtml`, `toggleCat`, `hiddenCats` in app.js; saved as `state.settings.hideCats`). Chips show "✓ Name count"; hidden ones lose the tick. "N of 5 categories hidden" note; friendly message if all hidden. Tested in Playwright (hide, persist across reload, restore): no errors. For 7b, reuse the same pattern (`.fchip`, `.filters`, `[data-...]` handled in the existing `view` click listener).
 - 5b FIX: choosing a lower starting level used to do nothing (it only ever raised words). `core.js` now has `applyBaseline(state, words, level, cfg)`: words assumed from the starting level carry `base:true` until a lookup, a finished text or a manual status clears it, so changing the level raises/lowers only assumed words and never undoes real progress. The onboarding card marks the current level (aria-pressed). The library footer has "Erase all my progress" (confirm, wipes localStorage key `hsk3-reader-v1`). 27 tests pass; Playwright check: levels 2,3,2,1,0,2 gave 93% / 100% / 93% / 77% / 0% / 93% for text 1. Progress saved by the pre-fix version has no `base` flags, so a user who clicked a high level before the fix must press "Erase all my progress" once.
 - STEP 6: `data/chars.js` (`CHARS_RAW`, 368 lines "字|pinyin|meaning"; single-character words in the word lists supply defaults, so chars.js only holds the rest and overrides). `core.js` gained `buildCharDict, charReadings, wordsContaining`; `tools/test-core.js` now has 24 tests (one asserts chars.js covers every lexicon character); `tools/validate.js` lists characters missing from the dictionary (including characters in names), so whenever new words or names are added, run it and add the listed characters to chars.js. In the word sheet: multi-character words show one row per distinct character (pinyin as read in this word, meaning, "also in" word chips, lower HSK levels first); single-character words show "Words with X" chips; tapping a chip opens that word. `index.html` loads `data/chars.js`. Browser test passed, no console errors. Chromium prints harmless refused-connection noise about google.com in this sandbox; ignore it.
@@ -75,8 +77,8 @@ Done:
 
 Next (each one small; do one at a time):
 - [x] 7a. Category chips on the library page: tap a category to hide or show it; saved in `state.settings.hideCats`. Hidden count shown ("2 of 5 categories hidden"). Names underline already works, so no work needed there.
-- [ ] 7b. Difficulty chips (Easy / Comfortable / Stretch / Challenge, with counts) and an "Unread only" toggle; saved in settings.
-- [ ] 7c. Sort menu (library order / easiest first / hardest first) and a "Surprise me" button that opens a random visible text.
+- [x] 7b. Difficulty chips (Easy / Comfortable / Stretch / Challenge, with counts) and an "Unread only" toggle; saved in settings.
+- [x] 7c. Sort menu (library order / easiest first / hardest first) and a "Surprise me" button that opens a random visible text.
 - [ ] 8a. Texts g2 (asking the way) + g3 (restaurant). Validate, add chars.
 - [ ] 8b. Texts s2 (lost hat) + n2 (new subway line).
 - [ ] 8c. Texts c1 (Spring Festival) + c2 (tea).

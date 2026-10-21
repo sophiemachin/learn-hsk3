@@ -133,3 +133,10 @@ button.small { min-height: 0; padding: 2px 8px; vertical-align: middle; }
 .fchip { min-height: 36px; padding: 4px 12px; border-radius: 999px; font-size: .9rem; color: var(--muted); }
 .fchip[aria-pressed="true"] { color: var(--text); }
 .fnote { margin: 6px 0 0; }
+
+/* step 7b: difficulty chips and unread toggle */
+.frow2 { margin-top: 8px; }
+
+/* step 7c: sort and surprise */
+.sortrow { align-items: center; }
+.sortrow select { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; min-height: 36px; }
