@@ -126,3 +126,10 @@ button.small { min-height: 0; padding: 2px 8px; vertical-align: middle; }
 .cpy { color: var(--accent); font-weight: 600; }
 .also { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chip { min-height: 0; padding: 2px 10px; font-size: .85rem; border-radius: 999px; }
+
+/* step 7a: category chips */
+.filters { margin: 0 0 12px; }
+.frow { display: flex; flex-wrap: wrap; gap: 8px; }
+.fchip { min-height: 36px; padding: 4px 12px; border-radius: 999px; font-size: .9rem; color: var(--muted); }
+.fchip[aria-pressed="true"] { color: var(--text); }
+.fnote { margin: 6px 0 0; }

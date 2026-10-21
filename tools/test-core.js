@@ -208,4 +208,35 @@ test("wordsContaining: excludes itself, lower levels first, honours limit", () =
   assert.ok(r[0].level <= r[2].level);
 });
 
+test("starting level can be raised and lowered again", () => {
+  const s = C.newState(), nw = id => C.statusById(s, id);
+  C.applyBaseline(s, lex.words, 3);
+  assert.ok(C.isKnown(s, id("你好")) && C.isKnown(s, id("阿姨")));
+  C.applyBaseline(s, lex.words, 2);
+  assert.ok(C.isKnown(s, id("你好")) && !C.isKnown(s, id("阿姨")), "HSK3 word is unknown again");
+  assert.strictEqual(nw(id("阿姨")), "new");
+  C.applyBaseline(s, lex.words, 0);
+  assert.ok(!C.isKnown(s, id("你好")));
+  assert.strictEqual(s.settings.startLevel, 0);
+});
+
+test("starting level never undoes real progress", () => {
+  const s = C.newState();
+  C.applyBaseline(s, lex.words, 2);
+  const tk = C.tokenize("你好", lex).tokens;
+  C.finishText(s, "t", tk, C.newSession(), null, "2026-10-20");   // real reading clears the assumption
+  C.setStatus(s, id("书"), "secure");                              // manual choice too
+  C.applyBaseline(s, lex.words, 0);
+  assert.ok(C.isKnown(s, id("你好")), "read word stays known");
+  assert.strictEqual(C.statusById(s, id("书")), "secure");
+  assert.ok(!C.isKnown(s, id("帮助")), "untouched assumed word goes back to new");
+});
+
+test("a lookup also clears the assumption", () => {
+  const s = C.newState(), sess = C.newSession();
+  C.applyBaseline(s, lex.words, 2);
+  C.lookup(s, id("书"), sess);
+  assert.ok(!("base" in s.words[id("书")]));
+});
+
 console.log("\n" + passed + " passed" + (process.exitCode ? ", some FAILED" : ""));

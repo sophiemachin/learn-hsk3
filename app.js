@@ -73,23 +73,44 @@
   var START = [[0, "I'm a beginner"], [1, "I know HSK 1"], [2, "I know HSK 1–2"], [3, "I know HSK 1–3"]];
 
   function applyStart(level) {
-    var ids = lex.words.filter(function (w) { return w.level <= level && !knownFn(w.id); }).map(function (w) { return w.id; });
-    C.bulkSet(state, ids, "familiar", cfg());
-    state.settings.onboarded = true; state.settings.startLevel = level;
+    C.applyBaseline(state, lex.words, level, cfg());
+    state.settings.onboarded = true;
     save(); renderLibrary();
   }
 
   function onboardingHtml() {
     return '<div class="onboard"><h2>Where are you starting?</h2>' +
-      '<p class="muted">Your percentages are worked out from the words you know. Pick the closest level and I\'ll mark those words as familiar. You can adjust any word later.</p>' +
+      '<p class="muted">Your percentages are worked out from the words you know. Pick the closest level and I\'ll treat those words as familiar. You can change this any time: words you have actually read or marked yourself are never undone.</p>' +
       '<div class="start-row">' + START.map(function (s) {
-        return '<button data-start="' + s[0] + '"' + (s[0] === 2 ? ' class="primary"' : "") + ">" + s[1] + "</button>";
+        var cur = state.settings.startLevel;
+        var attr = cur === undefined ? (s[0] === 2 ? ' class="primary"' : "") : ' aria-pressed="' + (s[0] === cur) + '"';
+        return '<button data-start="' + s[0] + '"' + attr + ">" + s[1] + "</button>";
       }).join("") + "</div></div>";
+  }
+
+  // Category filter: hidden categories are saved in settings.hideCats.
+  function hiddenCats() { return state.settings.hideCats || []; }
+  function toggleCat(c) {
+    var h = hiddenCats().slice(), i = h.indexOf(c);
+    if (i >= 0) h.splice(i, 1); else h.push(c);
+    state.settings.hideCats = h; save(); renderLibrary();
+  }
+  function filtersHtml(hide) {
+    var cats = Object.keys(C.CATS);
+    var chips = cats.map(function (c) {
+      var n = texts.filter(function (t) { return t.cat === c; }).length, on = hide.indexOf(c) < 0;
+      return '<button class="fchip" data-cat="' + c + '" aria-pressed="' + on + '">' + (on ? "✓ " : "") + esc(C.CATS[c]) + " " + n + "</button>";
+    }).join("");
+    var nh = cats.filter(function (c) { return hide.indexOf(c) >= 0; }).length;
+    return '<div class="filters"><div class="frow" role="group" aria-label="Show categories">' + chips + "</div>" +
+      (nh ? '<p class="muted fnote">' + nh + " of " + cats.length + " categories hidden</p>" : "") + "</div>";
   }
 
   function renderLibrary() {
     current = null; session = null;
-    var cards = texts.map(function (t) {
+    var hide = hiddenCats();
+    var visible = texts.filter(function (t) { return hide.indexOf(t.cat) < 0; });
+    var cards = visible.map(function (t) {
       var cov = coverageOf(t), r = state.reads[t.id];
       return '<a class="card" href="#text/' + t.id + '">' +
         '<div class="title zh" lang="zh">' + esc(t.title) + "</div>" +
@@ -101,15 +122,26 @@
     view.innerHTML =
       (state.settings.onboarded ? "" : onboardingHtml()) +
       '<p class="intro muted">Pick a text. The percentage is how many of its words you already know.</p>' +
-      '<div class="list">' + cards + "</div>" +
-      (state.settings.onboarded ? '<p class="muted foot"><button class="linkbtn" id="redo">Change my starting level</button></p>' : "");
+      filtersHtml(hide) +
+      '<div class="list">' + (cards || '<p class="muted">Every category is hidden. Tap one above to show it again.</p>') + "</div>" +
+      '<p class="muted foot">' + (state.settings.onboarded ? '<button class="linkbtn" id="redo">Change my starting level</button> · ' : "") +
+      '<button class="linkbtn" id="wipe">Erase all my progress</button></p>';
     var redo = $("#redo");
     if (redo) redo.onclick = function () { state.settings.onboarded = false; save(); renderLibrary(); };
+    $("#wipe").onclick = function () {
+      if (!confirm("Erase ALL your progress on this device? This can't be undone.")) return;
+      state = C.newState();
+      ui.pinyin = "on"; ui.fs = 1.7; ui.hl = true;
+      try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+      renderLibrary();
+    };
   }
 
   view.addEventListener("click", function (e) {
     var b = e.target.closest ? e.target.closest("[data-start]") : null;
-    if (b) applyStart(parseInt(b.dataset.start, 10));
+    if (b) { applyStart(parseInt(b.dataset.start, 10)); return; }
+    var c = e.target.closest ? e.target.closest("[data-cat]") : null;
+    if (c) toggleCat(c.dataset.cat);
   });
 
   // ---------- Reader ----------

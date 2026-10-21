@@ -5,14 +5,17 @@ Static site for GitHub Pages (plain HTML/CSS/JS, no build). Reading-first practi
 ## How to work through this (rules for Claude)
 
 1. Read this file first. Do ONLY the next unchecked step. Never start from scratch.
-2. Each step is sized for about 5 minutes. When it's done: tick the box here, send the changed files with SendUserFile, and stop. Don't roll on into the next step unless asked.
+2. Each step is tiny: ONE concern, about 5 minutes. If a step looks bigger than that, split it in this file first and do only the first piece. If the user reports a bug, fix ONLY the bug, send files, and stop; never fix a bug and start a step in the same turn (it burned the user's free usage once).
+2b. Each step is sized for about 5 minutes. When it's done: tick the box here, send the changed files with SendUserFile, and stop. Don't roll on into the next step unless asked.
 3. If time or usage runs out mid-step, send whatever exists and note in "Status" what's half-done.
 4. Do not rewrite files from earlier steps unless the step says so. Extend them.
 5. Keep replies short: what changed, how to check it, what the next step is.
 
 ## Status
 
-Last updated: 2026-10-20. Steps 1 to 6 done. Built so far:
+Last updated: 2026-10-21. Steps 1 to 6, 5b and 7a done. Built so far:
+- 7a: category chips above the library list (`filtersHtml`, `toggleCat`, `hiddenCats` in app.js; saved as `state.settings.hideCats`). Chips show "✓ Name count"; hidden ones lose the tick. "N of 5 categories hidden" note; friendly message if all hidden. Tested in Playwright (hide, persist across reload, restore): no errors. For 7b, reuse the same pattern (`.fchip`, `.filters`, `[data-...]` handled in the existing `view` click listener).
+- 5b FIX: choosing a lower starting level used to do nothing (it only ever raised words). `core.js` now has `applyBaseline(state, words, level, cfg)`: words assumed from the starting level carry `base:true` until a lookup, a finished text or a manual status clears it, so changing the level raises/lowers only assumed words and never undoes real progress. The onboarding card marks the current level (aria-pressed). The library footer has "Erase all my progress" (confirm, wipes localStorage key `hsk3-reader-v1`). 27 tests pass; Playwright check: levels 2,3,2,1,0,2 gave 93% / 100% / 93% / 77% / 0% / 93% for text 1. Progress saved by the pre-fix version has no `base` flags, so a user who clicked a high level before the fix must press "Erase all my progress" once.
 - STEP 6: `data/chars.js` (`CHARS_RAW`, 368 lines "字|pinyin|meaning"; single-character words in the word lists supply defaults, so chars.js only holds the rest and overrides). `core.js` gained `buildCharDict, charReadings, wordsContaining`; `tools/test-core.js` now has 24 tests (one asserts chars.js covers every lexicon character); `tools/validate.js` lists characters missing from the dictionary (including characters in names), so whenever new words or names are added, run it and add the listed characters to chars.js. In the word sheet: multi-character words show one row per distinct character (pinyin as read in this word, meaning, "also in" word chips, lower HSK levels first); single-character words show "Words with X" chips; tapping a chip opens that word. `index.html` loads `data/chars.js`. Browser test passed, no console errors. Chromium prints harmless refused-connection noise about google.com in this sandbox; ignore it.
 - Not yet done: names don't get a character breakdown (deliberate); no Words/Progress tabs; no filters.
 - STEP 5 (supersedes the step 4 "in memory only" note below): progress is saved to localStorage key `hsk3-reader-v1` (state = `{v, words, reads, days, settings}`; settings hold `onboarded, startLevel, pinyin, fs, hl`, and optional `familiarAt/secureAt`). Onboarding card on first visit (beginner / HSK 1 / 1-2 / 1-3; only raises words to familiar, never demotes; "Change my starting level" link at the bottom of the library). Tapping a word = lookup (core `lookup`); sheet has New/Seen/Familiar/Secure buttons (an explicit choice overrides the lookup), 🔊 listen button, "I already knew it: undo". Highlights toggle (new = blue tint, seen = amber tint, with legend). "Finish reading ✓" applies `finishText`, shows before/after %, words that moved up; a second finish the same day says "Already counted today". Library cards show "Read ×n". UI test (Playwright, scratchpad `ui-test5.js`, not in repo) passed: onboarding, lookup, undo, manual status, finish, persistence across reload, no console errors.
@@ -61,18 +64,34 @@ Bands: Easy 98%+, Comfortable 95–97%, Stretch 90–94%, Challenge below 90. Th
 
 ## Steps
 
-- [x] **1. Vocabulary.** Write `data/hsk1.js` (~150), `data/hsk2.js` (~150), add the missing ~20 words to `data/hsk3.js`, create empty `data/extra.js`. Format check: syllable count matches characters (erhua 儿 is the only exception). Send the data folder.
-- [x] **2. Core logic.** Write `core.js` (lexicon parser, tokenizer, coverage, bands, word status, lookup, finish, manual set) plus `tools/test-core.js`. Run the tests. Send both.
-- [x] **3. First 5 texts + validator.** Write `tools/validate.js` and 5 texts in `data/texts.js` (diary 1 and 2, dialogue 1, story 1, news 1). Run the validator and add every missing word to `extra.js` or the right HSK file. Send data and tools.
-- [x] **4. Minimal working app.** `index.html`, `style.css`, `app.js`: text list with live % and band, reader with tappable words, a basic word sheet (meaning and pinyin), pinyin toggle. Everything stored in memory only. Check it loads in headless Chromium with no console errors. Send all files. At this point the user can try it.
-- [x] **5. Progress tracking.** localStorage state, lookup and finish logic wired in, status buttons in the sheet, "I knew this", highlights, onboarding card, "Finish reading" summary.
-- [x] **6. Character dictionary.** Run the validator to list missing characters, write `data/chars.js` (in two halves if long), add the character breakdown and "also in" lists to the sheet.
-- [ ] **7. Names and filters.** Underlined names (check the underline renders with pinyin on), category and band chips, unread only, sort, Surprise me, filter settings saved.
-- [ ] **8. Texts batch 2.** 5 more texts (dialogue 2 and 3, story 2, news 2, culture 1). Validate.
-- [ ] **9. Texts batch 3.** 5 more texts (diary 3, story 3, culture 2, news 3, dialogue 4). Validate.
-- [ ] **10. Texts batch 4.** The 5 hardest (diary 4, story 4, culture 3 and 4, news 4). Validate. Check the spread of bands for someone at HSK 2: roughly 4 easy, 6 comfortable, 6 stretch, 4 challenge.
-- [ ] **11. Words and Progress tabs.** Word list with search, status and level filters, bulk-set. Progress with per-level bars, streak, texts read, export / import / reset, threshold settings.
-- [ ] **12. Polish and ship.** Playwright click-through of every screen at phone width and desktop, fix issues, rewrite README (GitHub Pages steps, how to add a text and run `node tools/validate.js`, data attribution note), final send.
+Done:
+- [x] 1. Vocabulary (hsk1/2/3/extra data files)
+- [x] 2. Core logic + tests
+- [x] 3. First 5 texts + validator
+- [x] 4. Minimal working app (library, reader, word sheet, pinyin toggle)
+- [x] 5. Progress tracking (localStorage, lookups, finish, highlights, onboarding)
+- [x] 5b. Fix: starting level can be lowered; erase-all link
+- [x] 6. Character dictionary
+
+Next (each one small; do one at a time):
+- [x] 7a. Category chips on the library page: tap a category to hide or show it; saved in `state.settings.hideCats`. Hidden count shown ("2 of 5 categories hidden"). Names underline already works, so no work needed there.
+- [ ] 7b. Difficulty chips (Easy / Comfortable / Stretch / Challenge, with counts) and an "Unread only" toggle; saved in settings.
+- [ ] 7c. Sort menu (library order / easiest first / hardest first) and a "Surprise me" button that opens a random visible text.
+- [ ] 8a. Texts g2 (asking the way) + g3 (restaurant). Validate, add chars.
+- [ ] 8b. Texts s2 (lost hat) + n2 (new subway line).
+- [ ] 8c. Texts c1 (Spring Festival) + c2 (tea).
+- [ ] 8d. Texts d3 (new colleague) + s3 (little panda).
+- [ ] 8e. Texts n3 (Chinese competition) + c3 (Chinese characters).
+- [ ] 8f. Texts g4 (phone call) + d4 (how I study Chinese).
+- [ ] 8g. Texts s4 (a decision) + c4 (hutongs).
+- [ ] 8h. Text n4 (exercise and health). Then check the band spread for someone at HSK 2: roughly 4 easy, 6 comfortable, 6 stretch, 4 challenge; adjust texts if lopsided.
+- [ ] 9a. Words tab (nav bar + word list with search and status / level filters; tap a word to open its sheet).
+- [ ] 9b. Words tab: bulk-set ("mark all HSK 3 words as ...").
+- [ ] 9c. Progress tab: streak, texts read, words per status, per-level bars.
+- [ ] 9d. Export / import progress as a JSON file.
+- [ ] 9e. Settings: familiar / secure thresholds.
+- [ ] 10a. Playwright click-through at phone width and desktop; fix only what is broken.
+- [ ] 10b. Rewrite README (GitHub Pages steps, adding a text, `node tools/validate.js`, data caveats). Final send.
 
 ## Known caveats to repeat in the README
 

@@ -135,8 +135,25 @@
     if (!rec) rec = state.words[id] = { exp: 0, clean: 0, looks: 0 };
     rec.exp = Math.max(rec.exp, 1);
     rec.clean = status === "seen" ? 0 : status === "familiar" ? cfg.familiarAt : cfg.secureAt;
+    delete rec.base;   // an explicit choice is real information, not an assumption
   }
   function bulkSet(state, ids, status, cfg) { ids.forEach(function (id) { setStatus(state, id, status, cfg); }); }
+
+  // Starting level: assume the learner knows every word up to `level`. Words assumed this way carry
+  // base:true until real activity (a lookup, a finished text, a manual choice) clears it. Changing the level
+  // later raises or lowers only those assumed words, so real progress is never undone.
+  function applyBaseline(state, words, level, cfg) {
+    cfg = cfgOf(cfg);
+    words.forEach(function (w) {
+      var rec = state.words[w.id], s = statusOf(rec, cfg);
+      if (w.level <= level) {
+        if (s === "new" || s === "seen") { setStatus(state, w.id, "familiar", cfg); state.words[w.id].base = true; }
+      } else if (rec && rec.base) {
+        delete state.words[w.id];
+      }
+    });
+    state.settings.startLevel = level;
+  }
 
   // ---------- Reading sessions ----------
   // session = { looked: {} } maps id -> previous record (or null) for words tapped in this reading.
@@ -150,6 +167,7 @@
     rec.looks++;
     rec.clean = Math.floor(rec.clean / 2);
     rec.exp = Math.max(rec.exp, 1);
+    delete rec.base;
     session.looked[id] = prev;
     return true;
   }
@@ -179,6 +197,7 @@
       var before = statusById(state, id, cfg);
       var rec = state.words[id] || (state.words[id] = { exp: 0, clean: 0, looks: 0 });
       rec.exp++;
+      delete rec.base;
       if (!Object.prototype.hasOwnProperty.call(session.looked, id)) rec.clean++;
       var after = statusById(state, id, cfg);
       if (before !== after) changes.push({ id: id, from: before, to: after });
@@ -230,7 +249,7 @@
     parseLexicon: parseLexicon, levelLabel: levelLabel, tokenize: tokenize,
     buildCharDict: buildCharDict, charReadings: charReadings, wordsContaining: wordsContaining,
     statusOf: statusOf, isKnownStatus: isKnownStatus, newState: newState, statusById: statusById, isKnown: isKnown,
-    setStatus: setStatus, bulkSet: bulkSet, newSession: newSession, lookup: lookup, undoLookup: undoLookup,
+    setStatus: setStatus, bulkSet: bulkSet, applyBaseline: applyBaseline, newSession: newSession, lookup: lookup, undoLookup: undoLookup,
     uniqueWordIds: uniqueWordIds, finishText: finishText, coverage: coverage, bandOf: bandOf, ymd: ymd, streak: streak,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
