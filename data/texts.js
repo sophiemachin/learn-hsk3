@@ -108,7 +108,7 @@ Xiaohong smiled and said, "Thank you!"`
     text: `春节 是 中国 最 大 的 节日。这 时候，大家 都 回 家。
 妈妈 买 了 很 多 菜 和 水果。晚上，我们 一 家 人 一起 吃饭，很 高兴。孩子 都 穿 新 衣服。
 很 多 朋友 说：“春节 快乐！”
-它 有 一 个 星期，大家 都 不 上班。我 很 喜欢 它。`,
+它 有 一 个 星期，大家 都 不 上班。我 爱 我 的 家 人，我 很 喜欢 它。`,
     en: `Spring Festival is China's biggest holiday. At this time everyone goes home.
 Mum buys lots of dishes and fruit. In the evening our whole family eats together, and we are very happy. The children all wear new clothes.
 Many friends say, "Happy Spring Festival!"
@@ -206,5 +206,40 @@ Every morning I start by listening to the Chinese news. Although there are parts
 In the afternoon I read and write characters.
 In the evening I chat with my Chinese friend. He says my Chinese is very good.
 Studying Chinese isn't easy, but I will definitely work hard.`
+  },
+  {
+    id: "s4", cat: "story", title: "一个决定", titleEn: "A decision",
+    text: `{李明|lǐ míng} 在 一 个 小 公司 工作。他 有 一 个 新 工作 的 机会，但是 新 公司 在 {北京}，离 他 家 很 远。
+他 想 了 一 个 星期，不 知道 怎么 做。
+妈妈 说：“你 觉得 什么 好，就 做 什么。”
+他 问 朋友，朋友 说：“去 吧！{北京} 很 大，有 很 多 机会。”
+他 说：“好，我 决定 去 {北京}！”`,
+    en: `Li Ming works at a small company. He has the chance of a new job, but the new company is in Beijing, far from his home.
+He thought about it for a week and didn't know what to do.
+His mum said, "Do whatever you think is best."
+He asked a friend, who said, "Go! Beijing is big and there are lots of opportunities."
+He said, "OK, I've decided to go to Beijing!"`
+  },
+  {
+    id: "c4", cat: "culture", title: "北京的胡同", titleEn: "The hutongs of Beijing",
+    text: `{北京} 有 很 多 老 胡同。它 是 小 小 的 街道。
+很 久 以前，很 多 人 住 在 胡同 里，今天 还 有 人 住 在 这 里。
+这 里 很 安静。旁边 有 小 商店 和 饭店。
+我 喜欢 在 这 里 走 一 走，喝 杯 茶。`,
+    en: `Beijing has many old hutongs. A hutong is a small, narrow street.
+A long time ago, many people lived in the hutongs, and some still live here today.
+It is very quiet in a hutong. Beside it there are small shops and restaurants.
+I like to stroll here and have a cup of tea.`
+  },
+  {
+    id: "n4", cat: "news", title: "运动和身体", titleEn: "Exercise and health",
+    text: `医生 说，每天 运动 对 身体 很 好。很 多 人 早上 跑步，下午 游泳。
+每 星期 运动 三 次，每 次 三 十 分钟，就 可以 了。
+运动 的 时候 要 喝 水，运动 完 要 休息。天气 冷 的 时候，要 多 穿 衣服。
+运动 还 能 让 你 高兴。大家 一起 锻炼 吧，身体 健康 最 重要。`,
+    en: `Doctors say that exercising every day is very good for your body. Many people go jogging in the morning and swimming in the afternoon.
+Exercising three times a week for thirty minutes each time is enough.
+Drink water while you exercise, and rest when you've finished. When the weather is cold, wear extra clothes.
+Exercise can also make you happy. Let's all work out together: good health is the most important thing.`
   }
 ];

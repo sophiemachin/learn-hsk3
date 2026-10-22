@@ -192,6 +192,81 @@
     if (e.target.closest && e.target.closest("[data-unread]")) toggleUnread();
   });
 
+  // ---------- Words tab ----------
+  // Filters live in memory only (they reset on reload): none selected in a group means "show all".
+  var wf = { q: "", status: [], level: [] }, onWords = false;
+  var WLEVELS = [[1, "HSK 1"], [2, "HSK 2"], [3, "HSK 3"], [4, "Beyond"]];
+  function plain(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "").toLowerCase(); }
+  function toggleIn(arr, v) { var i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); }
+
+  function filteredWords() {
+    var q = wf.q.trim().toLowerCase(), qp = plain(wf.q);
+    return lex.words.filter(function (w) {
+      if (wf.level.length && wf.level.indexOf(w.level) < 0) return false;
+      if (wf.status.length && wf.status.indexOf(statusOf(w.id)) < 0) return false;
+      if (!q) return true;
+      return w.h.indexOf(q) >= 0 || (qp && plain(w.p).indexOf(qp) >= 0) || w.e.toLowerCase().indexOf(q) >= 0;
+    });
+  }
+
+  function renderWordList() {
+    var box = $("#wlist");
+    if (!box) return;
+    var list = filteredWords(), MAX = 150;
+    var rows = list.slice(0, MAX).map(function (w) {
+      var s = statusOf(w.id);
+      return '<button class="wrow" data-word="' + esc(w.id) + '">' +
+        '<span class="wh zh" lang="zh">' + esc(w.h) + "</span>" +
+        '<span class="wmid"><span class="wp">' + esc(w.p) + '</span><span class="we">' + esc(w.e) + "</span></span>" +
+        '<span class="wtags"><span class="pill cat">' + esc(w.level <= 3 ? "HSK " + w.level : "Beyond") + '</span><span class="pill st-' + s + '">' + cap(s) + "</span></span></button>";
+    }).join("");
+    box.innerHTML = rows || '<p class="muted">No words match. Try clearing a filter or the search.</p>';
+    var counts = {};
+    lex.words.forEach(function (w) { var s = statusOf(w.id); counts[s] = (counts[s] || 0) + 1; });
+    var chips = document.querySelectorAll("[data-wstatus]");
+    for (var i = 0; i < chips.length; i++) {
+      var st = chips[i].dataset.wstatus, on = wf.status.indexOf(st) >= 0;
+      chips[i].textContent = (on ? "✓ " : "") + cap(st) + " " + (counts[st] || 0);
+    }
+    $("#wcount").textContent = list.length === lex.words.length ? plural(list.length, "word") :
+      list.length + " of " + plural(lex.words.length, "word");
+    $("#wmore").textContent = list.length > MAX ? "Showing the first " + MAX + ". Search or filter to narrow it down." : "";
+  }
+
+  function renderWords() {
+    current = null; session = null; onWords = true;
+    var counts = {};
+    lex.words.forEach(function (w) { var s = statusOf(w.id); counts[s] = (counts[s] || 0) + 1; });
+    var sch = C.STATUSES.map(function (s) {
+      var on = wf.status.indexOf(s) >= 0;
+      return '<button class="fchip" data-wstatus="' + s + '" aria-pressed="' + on + '">' + (on ? "✓ " : "") + cap(s) + " " + (counts[s] || 0) + "</button>";
+    }).join("");
+    var lch = WLEVELS.map(function (l) {
+      var on = wf.level.indexOf(l[0]) >= 0;
+      return '<button class="fchip" data-wlevel="' + l[0] + '" aria-pressed="' + on + '">' + (on ? "✓ " : "") + l[1] + "</button>";
+    }).join("");
+    view.innerHTML =
+      '<h1 class="ptitle">Words</h1>' +
+      '<p class="intro muted">Every word in the texts. Tap one to see it and change how well you know it.</p>' +
+      '<input id="wq" class="wsearch" type="search" placeholder="Search hanzi, pinyin or English" aria-label="Search words" value="' + esc(wf.q) + '" autocomplete="off">' +
+      '<div class="filters"><div class="frow" role="group" aria-label="Filter by status">' + sch + "</div>" +
+      '<div class="frow frow2" role="group" aria-label="Filter by level">' + lch + "</div></div>" +
+      '<p class="muted" id="wcount"></p><div class="wlist" id="wlist"></div><p class="muted fnote" id="wmore"></p>';
+    renderWordList();
+  }
+
+  view.addEventListener("input", function (e) {
+    if (e.target.id === "wq") { wf.q = e.target.value; renderWordList(); }
+  });
+  view.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target : null;
+    if (!t) return;
+    var ws = t.closest("[data-wstatus]"), wl = t.closest("[data-wlevel]"), wr = t.closest("[data-word]");
+    if (ws) { toggleIn(wf.status, ws.dataset.wstatus); renderWords(); }
+    else if (wl) { toggleIn(wf.level, parseInt(wl.dataset.wlevel, 10)); renderWords(); }
+    else if (wr) showWord(wr.dataset.word);
+  });
+
   // ---------- Reader ----------
   var current = null, session = null;
 
@@ -367,10 +442,10 @@
     if (b.dataset.status) {
       C.setStatus(state, sheetWord, b.dataset.status, cfg());
       if (session) delete session.looked[sheetWord];   // an explicit choice overrides the lookup
-      save(); refreshReader(); showWord(sheetWord);
+      save(); refreshReader(); if (onWords) renderWordList(); showWord(sheetWord);
     } else if (b.dataset.act === "knew") {
       C.undoLookup(state, sheetWord, session);
-      save(); refreshReader(); showWord(sheetWord);
+      save(); refreshReader(); if (onWords) renderWordList(); showWord(sheetWord);
     } else if (b.dataset.act === "say") {
       speak(lex.byId[sheetWord].h);
     }
@@ -392,7 +467,15 @@
   function route() {
     closeSheet();
     var h = location.hash.replace(/^#/, "");
-    if (h.indexOf("text/") === 0) renderReader(h.slice(5)); else renderLibrary();
+    onWords = false;
+    if (h.indexOf("text/") === 0) renderReader(h.slice(5));
+    else if (h === "words") renderWords();
+    else renderLibrary();
+    var links = document.querySelectorAll("[data-nav]");
+    for (var i = 0; i < links.length; i++) {
+      var on = links[i].dataset.nav === (h === "words" ? "words" : "texts");
+      if (on) links[i].setAttribute("aria-current", "page"); else links[i].removeAttribute("aria-current");
+    }
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);

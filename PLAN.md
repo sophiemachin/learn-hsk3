@@ -13,7 +13,10 @@ Static site for GitHub Pages (plain HTML/CSS/JS, no build). Reading-first practi
 
 ## Status
 
-Last updated: 2026-10-21. Steps 1 to 7 and 8a-8f done. Built so far:
+Last updated: 2026-10-21. Steps 1 to 8 and 9a done. Built so far:
+- 9a: nav bar (Texts / Words) in `index.html` with `data-nav`; route `#words` -> `renderWords()` in app.js (`filteredWords`, `renderWordList`, `wf` filter state kept in memory only, not saved). Search matches hanzi, pinyin (tone marks and spaces ignored, so `dianhua` finds 打电话) and English; status chips (with live counts) and level chips (HSK 1/2/3/Beyond); none selected = show all. List shows the first 150 matches with a note. Tapping a row opens the existing word sheet; changing status there updates the list and chip counts (`onWords` flag; sheet handler calls `renderWordList`). Playwright at 390px: search, filters, status change, nav both ways, no errors. For 9b, add the bulk-set controls to `renderWords`; for 9c, add a Progress tab with a third `data-nav` link.
+- 8h: text n4 (运动和身体, 95% Comfortable at HSK 2). An older draft of n4 (运动和健康, 94% Stretch) was already in `data/texts.js` from an interrupted run; it was removed so ids are unique. Also nudged c1 (春节) from 94% to 95% by adding one known-word sentence. FINAL SPREAD at HSK 2 (20 texts): Easy 4, Comfortable 6, Stretch 6, Challenge 4, exactly the target. Validator: All good; 27 tests pass.
+- 8g: texts s4 (一个决定, 95% Comfortable at HSK 2) and c4 (北京的胡同, 86% Challenge) added (19 texts). Added 胡同 to `data/extra.js` and 胡 to `data/chars.js`. Note: 可是 is not in the lexicon (use 但是). Bands at HSK 2: Easy 4, Comfortable 4, Stretch 7, Challenge 4. Only n4 (8h) left, then check the spread. Validator: All good.
 - 8f: texts g4 (打电话, 94% Stretch at HSK 2) and d4 (我怎么学汉语, 85% Challenge) added (17 texts). No new words or characters. Note: a single character like 早 is not a word in the lexicon; use 早上 or reword. Bands at HSK 2: Easy 4, Comfortable 3, Stretch 7, Challenge 3. Validator: All good.
 - 8e: texts n3 (汉语比赛, 95% Comfortable at HSK 2) and c3 (汉字, 95% Comfortable) added (15 texts). Added 汉字 to `data/extra.js`; no new characters needed. Bands at HSK 2: Easy 4, Comfortable 3, Stretch 6, Challenge 2. Validator: All good.
 - 8d: texts d3 (新同事, 98% Easy at HSK 2) and s3 (小熊猫北北, 93% Stretch) added (13 texts). Added 竹子 to `data/extra.js`; 竹 and 王 to `data/chars.js`. Bands at HSK 2: Easy 4, Comfortable 1, Stretch 6, Challenge 2. Comfortable (95-97%) is the thin band; aim a few later texts there.
@@ -91,9 +94,9 @@ Next (each one small; do one at a time):
 - [x] 8d. Texts d3 (new colleague) + s3 (little panda).
 - [x] 8e. Texts n3 (Chinese competition) + c3 (Chinese characters).
 - [x] 8f. Texts g4 (phone call) + d4 (how I study Chinese).
-- [ ] 8g. Texts s4 (a decision) + c4 (hutongs).
-- [ ] 8h. Text n4 (exercise and health). Then check the band spread for someone at HSK 2: roughly 4 easy, 6 comfortable, 6 stretch, 4 challenge; adjust texts if lopsided.
-- [ ] 9a. Words tab (nav bar + word list with search and status / level filters; tap a word to open its sheet).
+- [x] 8g. Texts s4 (a decision) + c4 (hutongs).
+- [x] 8h. Text n4 (exercise and health). Then check the band spread for someone at HSK 2: roughly 4 easy, 6 comfortable, 6 stretch, 4 challenge; adjust texts if lopsided.
+- [x] 9a. Words tab (nav bar + word list with search and status / level filters; tap a word to open its sheet).
 - [ ] 9b. Words tab: bulk-set ("mark all HSK 3 words as ...").
 - [ ] 9c. Progress tab: streak, texts read, words per status, per-level bars.
 - [ ] 9d. Export / import progress as a JSON file.

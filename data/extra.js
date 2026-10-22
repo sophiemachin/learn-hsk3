@@ -4,5 +4,6 @@
 var EXTRA_RAW = [
 "春节|chūn jié|Spring Festival",
 "竹子|zhú zi|bamboo",
-"汉字|hàn zì|Chinese character"
+"汉字|hàn zì|Chinese character",
+"胡同|hú tòng|hutong (narrow alley)"
 ];
