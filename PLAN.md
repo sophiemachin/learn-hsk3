@@ -13,7 +13,10 @@ Static site for GitHub Pages (plain HTML/CSS/JS, no build). Reading-first practi
 
 ## Status
 
-Last updated: 2026-10-21. Steps 1 to 7 and 8a-8c done. Built so far:
+Last updated: 2026-10-21. Steps 1 to 7 and 8a-8f done. Built so far:
+- 8f: texts g4 (打电话, 94% Stretch at HSK 2) and d4 (我怎么学汉语, 85% Challenge) added (17 texts). No new words or characters. Note: a single character like 早 is not a word in the lexicon; use 早上 or reword. Bands at HSK 2: Easy 4, Comfortable 3, Stretch 7, Challenge 3. Validator: All good.
+- 8e: texts n3 (汉语比赛, 95% Comfortable at HSK 2) and c3 (汉字, 95% Comfortable) added (15 texts). Added 汉字 to `data/extra.js`; no new characters needed. Bands at HSK 2: Easy 4, Comfortable 3, Stretch 6, Challenge 2. Validator: All good.
+- 8d: texts d3 (新同事, 98% Easy at HSK 2) and s3 (小熊猫北北, 93% Stretch) added (13 texts). Added 竹子 to `data/extra.js`; 竹 and 王 to `data/chars.js`. Bands at HSK 2: Easy 4, Comfortable 1, Stretch 6, Challenge 2. Comfortable (95-97%) is the thin band; aim a few later texts there.
 - 8c: texts c1 (春节, 94% Stretch at HSK 2) and c2 (喝茶, 98% Easy) added (11 texts). Added 春节 to `data/extra.js` (first word there). Tip learned: a repeated beyond-HSK word drags the % down fast, so use 它 / 这 after the first mention. Bands at HSK 2: Easy 3, Comfortable 1, Stretch 5, Challenge 2. Validator: All good.
 - 8b: texts s2 (小红的帽子, 93% Stretch at HSK 2) and n2 (新地铁明天开始, 91% Stretch) added (9 texts now). No new words or characters needed; validator: All good. Bands at HSK 2: Easy 2, Comfortable 1, Stretch 4, Challenge 2. Later texts should lean Easy/Comfortable.
 - 8a: texts g2 (地铁站, 96% Comfortable at HSK 2) and g3 (饭店, 98% Easy) added to `data/texts.js` (7 texts now). Added 你们 to `data/hsk1.js` (was missing). Validator: All good; no new characters needed. Bands at HSK 2 so far: Easy 2, Comfortable 1, Stretch 2, Challenge 2; keep new texts easier where possible.
@@ -85,9 +88,9 @@ Next (each one small; do one at a time):
 - [x] 8a. Texts g2 (asking the way) + g3 (restaurant). Validate, add chars.
 - [x] 8b. Texts s2 (lost hat) + n2 (new subway line).
 - [x] 8c. Texts c1 (Spring Festival) + c2 (tea).
-- [ ] 8d. Texts d3 (new colleague) + s3 (little panda).
-- [ ] 8e. Texts n3 (Chinese competition) + c3 (Chinese characters).
-- [ ] 8f. Texts g4 (phone call) + d4 (how I study Chinese).
+- [x] 8d. Texts d3 (new colleague) + s3 (little panda).
+- [x] 8e. Texts n3 (Chinese competition) + c3 (Chinese characters).
+- [x] 8f. Texts g4 (phone call) + d4 (how I study Chinese).
 - [ ] 8g. Texts s4 (a decision) + c4 (hutongs).
 - [ ] 8h. Text n4 (exercise and health). Then check the band spread for someone at HSK 2: roughly 4 easy, 6 comfortable, 6 stretch, 4 challenge; adjust texts if lopsided.
 - [ ] 9a. Words tab (nav bar + word list with search and status / level filters; tap a word to open its sheet).

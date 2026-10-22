@@ -124,5 +124,87 @@ It lasts a week, and nobody goes to work. I like it very much.`
 In the morning, many people have a cup of tea. When friends come to our home, we invite them to have tea.
 You should drink tea slowly, not too fast.
 Tea is very good for your health. My dad drinks three cups of tea every day.`
+  },
+  {
+    id: "d3", cat: "diary", title: "新同事", titleEn: "A new colleague",
+    text: `今天 公司 来 了 一 个 新 同事，他 叫 {王明|wáng míng}。他 二 十 五 岁，是 {北京} 人。
+中午，我们 一起 去 饭店 吃饭。他 喜欢 吃 羊肉 和 面条。他 问 了 我 很 多 问题：公司 在 哪儿？哪儿 有 好吃 的 饭店？
+下午，我 帮助 他 找 到 椅子 和 桌子。
+我 觉得 他 很 好，我们 会 是 好 朋友。`,
+    en: `Today a new colleague joined the company. His name is Wang Ming. He is twenty-five and from Beijing.
+At noon we went to a restaurant together. He likes lamb and noodles. He asked me lots of questions: Where is the company? Where are the good restaurants?
+In the afternoon I helped him find a chair and a desk.
+I think he's nice, and I think we'll be good friends.`
+  },
+  {
+    id: "s3", cat: "story", title: "小熊猫北北", titleEn: "Beibei the little panda",
+    text: `有 一 只 小 熊猫，名字 叫 {北北|běi běi}。它 很 可爱，喜欢 吃 竹子，也 喜欢 睡觉。
+今天 天气 很 好，{北北} 想 出去 玩。它 看见 一 只 小 狗。
+小 狗 说：“你好！你 在 做 什么？”
+{北北} 说：“我 想 找 朋友。你 可以 和 我 玩 吗？”
+小 狗 笑 了：“好 的！”
+{北北} 和 小 狗 一起 玩 了 一 个 下午。晚上，{北北} 回 家 了。它 很 高兴，因为 它 有 了 新 朋友。`,
+    en: `There was a little panda called Beibei. She was very cute, and liked eating bamboo and sleeping too.
+The weather was lovely today and Beibei wanted to go out and play. She saw a little dog.
+The little dog said, "Hello! What are you doing?"
+Beibei said, "I'm looking for a friend. Would you like to play with me?"
+The little dog smiled: "Sure!"
+Beibei and the little dog played together all afternoon. In the evening Beibei went home. She was very happy, because she had a new friend.`
+  },
+  {
+    id: "n3", cat: "news", title: "汉语比赛", titleEn: "The Chinese contest",
+    text: `学校 有 一 个 汉语 比赛，星期 六 开始。很 多 学生 想 参加。
+它 有 三 个 题：读 书，写 字，说话。
+老师 说：“不 要 太 快，慢 一点儿。”
+最 好 的 学生 可以 去 {北京} 玩。请 你 来 看 吧。`,
+    en: `The school is holding a Chinese contest, starting on Saturday. Many students want to take part.
+It has three parts: reading, writing and speaking.
+The teacher says, "Don't go too fast. Slow down a little."
+The best student can go to Beijing for a visit. Please come and watch.`
+  },
+  {
+    id: "c3", cat: "culture", title: "汉字", titleEn: "Chinese characters",
+    text: `中国 的 字 叫 汉字。我 每天 在 学校 学习 它，写 十 个 字。
+我 喜欢 “月” 字，因为 它 就 是 月亮。
+老师 说：“多 写，多 读，你 会 学习 得 很 好。”
+现在 我 认识 三 百 个 字 了！`,
+    en: `Chinese writing is called hanzi. Every day at school I study it and write ten characters.
+I like the character "月", because it is the moon.
+The teacher says, "Write more, read more, and you will do very well."
+Now I know three hundred characters!`
+  },
+  {
+    id: "g4", cat: "dialogue", title: "打电话", titleEn: "A phone call",
+    text: `A：喂，你好！我 是 {小明|xiǎo míng}。你 现在 忙 吗？
+B：不 忙，你 有 什么 事情？
+A：明天 星期 六，我们 去 爬山 吧。
+B：好 的！几 点 去？
+A：早上 八 点，在 学校 前面 见面。
+B：八 点？我 还 想 睡觉！
+A：那 九 点，可以 吗？
+B：好 的。我 带 水 和 水果。
+A：好，那 明天 再见！`,
+    en: `A: Hello! It's Xiaoming. Are you busy right now?
+B: No. What's up?
+A: Tomorrow is Saturday. Let's go hiking.
+B: OK! What time?
+A: Eight in the morning. Let's meet in front of the school.
+B: Eight? I still want to sleep!
+A: Then nine o'clock. Is that all right?
+B: OK. I'll bring water and fruit.
+A: Great, see you tomorrow!`
+  },
+  {
+    id: "d4", cat: "diary", title: "我怎么学汉语", titleEn: "How I study Chinese",
+    text: `我 学习 汉语 已经 两 年 了。
+每天 早上，我 先 听 汉语 新闻。虽然 有 的 我 听 不 懂，但是 我 觉得 很 有 意思。
+下午，我 看 书，写 汉字。
+晚上，我 和 中国 朋友 聊天。他 说 我 的 汉语 很 好。
+学习 汉语 不 容易，但是 我 一定 会 努力。`,
+    en: `I've been studying Chinese for two years now.
+Every morning I start by listening to the Chinese news. Although there are parts I don't understand, I find it very interesting.
+In the afternoon I read and write characters.
+In the evening I chat with my Chinese friend. He says my Chinese is very good.
+Studying Chinese isn't easy, but I will definitely work hard.`
   }
 ];

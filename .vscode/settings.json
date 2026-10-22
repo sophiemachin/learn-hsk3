@@ -1,5 +1,17 @@
 {
     "terminal.integrated.env.osx": {
         "HISTFILE": "${workspaceFolder}/.shell_history"
-  }
+},
+"cSpell.words": [
+    "Beibei",
+    "Dahuang",
+    "hanzi",
+    "hóng",
+    "huáng",
+    "míng",
+    "wáng",
+    "xiǎo",
+    "Xiaohong",
+    "zhǎng"
+]
 }
