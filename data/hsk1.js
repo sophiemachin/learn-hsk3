@@ -74,6 +74,7 @@ var HSK1_RAW = [
 "能|néng|can; to be able to",
 "你|nǐ|you",
 "你好|nǐ hǎo|hello",
+"你们|nǐ men|you (plural)",
 "年|nián|year",
 "女儿|nǚ ér|daughter",
 "朋友|péng you|friend",

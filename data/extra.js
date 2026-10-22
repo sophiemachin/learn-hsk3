@@ -2,4 +2,5 @@
 // Same format: "hanzi|pinyin (spaces between syllables)|english"
 // This file grows as texts are added; tools/validate.js lists any missing words.
 var EXTRA_RAW = [
+"春节|chūn jié|Spring Festival"
 ];

@@ -13,7 +13,10 @@ Static site for GitHub Pages (plain HTML/CSS/JS, no build). Reading-first practi
 
 ## Status
 
-Last updated: 2026-10-21. Steps 1 to 6, 5b, 7a, 7b and 7c done. Built so far:
+Last updated: 2026-10-21. Steps 1 to 7 and 8a-8c done. Built so far:
+- 8c: texts c1 (春节, 94% Stretch at HSK 2) and c2 (喝茶, 98% Easy) added (11 texts). Added 春节 to `data/extra.js` (first word there). Tip learned: a repeated beyond-HSK word drags the % down fast, so use 它 / 这 after the first mention. Bands at HSK 2: Easy 3, Comfortable 1, Stretch 5, Challenge 2. Validator: All good.
+- 8b: texts s2 (小红的帽子, 93% Stretch at HSK 2) and n2 (新地铁明天开始, 91% Stretch) added (9 texts now). No new words or characters needed; validator: All good. Bands at HSK 2: Easy 2, Comfortable 1, Stretch 4, Challenge 2. Later texts should lean Easy/Comfortable.
+- 8a: texts g2 (地铁站, 96% Comfortable at HSK 2) and g3 (饭店, 98% Easy) added to `data/texts.js` (7 texts now). Added 你们 to `data/hsk1.js` (was missing). Validator: All good; no new characters needed. Bands at HSK 2 so far: Easy 2, Comfortable 1, Stretch 2, Challenge 2; keep new texts easier where possible.
 - 7c: `SORTS`, `visibleTexts()` (filters + sort, used by `renderLibrary` and Surprise me), `sortHtml()` in app.js; sort saved as `state.settings.sort` (library / easiest / hardest, ties keep library order); "🎲 Surprise me" opens a random visible text (toast if none). Syntax-checked only. Library page is now complete.
 - 7b: difficulty chips (`hiddenBands`, `toggleBand`, saved as `state.settings.hideBands`; counts are live from the user's own words) and an "Unread only" chip (`toggleUnread`, `state.settings.unreadOnly`) in `filtersHtml`; `renderLibrary` filters by category, band and unread. Handled in the same `view` click listener via `data-band` / `data-unread`; `.frow2` CSS adds spacing. Syntax-checked and unit tests run; not browser-tested. For 7c, add sort + Surprise me in the same filters area.
 - 7a: category chips above the library list (`filtersHtml`, `toggleCat`, `hiddenCats` in app.js; saved as `state.settings.hideCats`). Chips show "✓ Name count"; hidden ones lose the tick. "N of 5 categories hidden" note; friendly message if all hidden. Tested in Playwright (hide, persist across reload, restore): no errors. For 7b, reuse the same pattern (`.fchip`, `.filters`, `[data-...]` handled in the existing `view` click listener).
@@ -79,9 +82,9 @@ Next (each one small; do one at a time):
 - [x] 7a. Category chips on the library page: tap a category to hide or show it; saved in `state.settings.hideCats`. Hidden count shown ("2 of 5 categories hidden"). Names underline already works, so no work needed there.
 - [x] 7b. Difficulty chips (Easy / Comfortable / Stretch / Challenge, with counts) and an "Unread only" toggle; saved in settings.
 - [x] 7c. Sort menu (library order / easiest first / hardest first) and a "Surprise me" button that opens a random visible text.
-- [ ] 8a. Texts g2 (asking the way) + g3 (restaurant). Validate, add chars.
-- [ ] 8b. Texts s2 (lost hat) + n2 (new subway line).
-- [ ] 8c. Texts c1 (Spring Festival) + c2 (tea).
+- [x] 8a. Texts g2 (asking the way) + g3 (restaurant). Validate, add chars.
+- [x] 8b. Texts s2 (lost hat) + n2 (new subway line).
+- [x] 8c. Texts c1 (Spring Festival) + c2 (tea).
 - [ ] 8d. Texts d3 (new colleague) + s3 (little panda).
 - [ ] 8e. Texts n3 (Chinese competition) + c3 (Chinese characters).
 - [ ] 8f. Texts g4 (phone call) + d4 (how I study Chinese).
