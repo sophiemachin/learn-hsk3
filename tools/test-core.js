@@ -239,4 +239,63 @@ test("a lookup also clears the assumption", () => {
   assert.ok(!("base" in s.words[id("书")]));
 });
 
+test("progress file: a saved state round-trips through JSON", () => {
+  const s = C.newState();
+  C.applyBaseline(s, lex.words, 1);
+  C.finishText(s, "t", C.tokenize("书", lex).tokens, C.newSession(), null, "2026-10-20");
+  const r = C.parseSavedState(JSON.stringify(s));
+  assert.strictEqual(r.error, undefined);
+  assert.deepStrictEqual(r.state, s);
+  assert.ok(C.isKnown(r.state, id("你好")));
+});
+
+test("progress file: rejects bad JSON, wrong shape and damaged entries", () => {
+  assert.ok(C.parseSavedState("not json").error);
+  assert.ok(C.parseSavedState("[]").error);
+  assert.ok(C.parseSavedState('{"words":{}}').error);
+  assert.ok(C.parseSavedState('{"words":{"a|b":{"exp":"x","clean":0,"looks":0}},"reads":{},"days":{}}').error);
+  assert.ok(C.parseSavedState('{"words":{},"reads":{"t":{"n":-1}},"days":{}}').error);
+  const ok = C.parseSavedState('{"words":{},"reads":{},"days":{}}');
+  assert.deepStrictEqual(ok.state.settings, {});   // settings are filled in when missing
+});
+
+test("thresholds: raising them never demotes a word", () => {
+  const s = C.newState(), [a, b, c] = [id("书"), id("水"), id("茶")];
+  C.setStatus(s, a, "seen"); C.setStatus(s, b, "familiar"); C.setStatus(s, c, "secure");
+  const r = C.changeThresholds(s, 5, 12);
+  assert.strictEqual(r.error, undefined);
+  assert.strictEqual(r.raised, 2);                       // the familiar and the secure word were lifted
+  const cfg = { familiarAt: 5, secureAt: 12 };
+  assert.strictEqual(C.statusById(s, a, cfg), "seen");
+  assert.strictEqual(C.statusById(s, b, cfg), "familiar");
+  assert.strictEqual(C.statusById(s, c, cfg), "secure");
+  assert.deepStrictEqual([s.settings.familiarAt, s.settings.secureAt], [5, 12]);
+});
+
+test("thresholds: lowering them promotes words that now qualify", () => {
+  const s = C.newState(), w = id("书");
+  C.finishText(s, "t", C.tokenize("书", lex).tokens, C.newSession(), null, "2026-10-01");
+  C.finishText(s, "t", C.tokenize("书", lex).tokens, C.newSession(), null, "2026-10-02");
+  assert.strictEqual(C.statusById(s, w), "seen");        // clean 2 of 3
+  assert.strictEqual(C.changeThresholds(s, 2, 8).raised, 0);
+  assert.strictEqual(C.statusById(s, w, { familiarAt: 2, secureAt: 8 }), "familiar");
+});
+
+test("thresholds: assumed starting-level words stay known after raising", () => {
+  const s = C.newState();
+  C.applyBaseline(s, lex.words, 2);
+  C.changeThresholds(s, 6, 15);
+  const cfg = { familiarAt: 6, secureAt: 15 };
+  assert.ok(C.isKnown(s, id("你好"), cfg));
+  assert.ok(s.words[id("你好")].base, "still marked as assumed");
+});
+
+test("thresholds: bad values are refused and change nothing", () => {
+  const s = C.newState();
+  for (const [f, x] of [[0, 8], [3, 3], [5, 4], [2.5, 8], ["a", 8], [3, 99]]) {
+    assert.ok(C.changeThresholds(s, f, x).error, f + "," + x);
+  }
+  assert.deepStrictEqual(s.settings, {});
+});
+
 console.log("\n" + passed + " passed" + (process.exitCode ? ", some FAILED" : ""));

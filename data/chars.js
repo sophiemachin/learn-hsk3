@@ -372,5 +372,6 @@ var CHARS_RAW = [
 "般|bān|kind; sort (in 一般)",
 "银|yín|silver",
 "竹|zhú|bamboo",
-"王|wáng|king; (surname) Wang"
+"王|wáng|king; (surname) Wang",
+"胡|hú|(in 胡同) hutong; recklessly; (surname) Hu"
 ];

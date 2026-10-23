@@ -124,8 +124,42 @@
   function isKnownStatus(s) { return s === "familiar" || s === "secure"; }
 
   function newState() { return { v: 1, words: {}, reads: {}, days: {}, settings: {} }; }
+  // Reads the text of a progress file. Returns { state } or { error } (a message fit to show the user).
+  function parseSavedState(text) {
+    function isObj(x) { return x !== null && typeof x === "object" && !Array.isArray(x); }
+    function num(x) { return typeof x === "number" && isFinite(x) && x >= 0; }
+    var s;
+    try { s = JSON.parse(text); } catch (e) { return { error: "That file isn't valid JSON." }; }
+    if (!isObj(s) || !isObj(s.words) || !isObj(s.reads) || !isObj(s.days)) return { error: "That doesn't look like a progress file from this reader." };
+    var bad = Object.keys(s.words).some(function (k) { var r = s.words[k]; return !isObj(r) || !num(r.exp) || !num(r.clean) || !num(r.looks); }) ||
+      Object.keys(s.reads).some(function (k) { var r = s.reads[k]; return !isObj(r) || !num(r.n); }) ||
+      Object.keys(s.days).some(function (k) { var r = s.days[k]; return !isObj(r) || !num(r.texts) || !num(r.words); });
+    if (bad) return { error: "That progress file has damaged entries, so it wasn't imported." };
+    s.settings = isObj(s.settings) ? s.settings : {};
+    s.v = 1;
+    return { state: s };
+  }
   function statusById(state, id, cfg) { return statusOf(state.words[id], cfg); }
   function isKnown(state, id, cfg) { return isKnownStatus(statusById(state, id, cfg)); }
+
+  // Change the familiar / secure thresholds. Raising them must not quietly demote words the learner already
+  // knows (or assumed from the starting level), so any word whose status would drop keeps it: its clean count
+  // is lifted to the new threshold. Lowering them simply promotes words that now qualify.
+  // Returns { raised } (words kept at their status) or { error } with the state untouched.
+  function changeThresholds(state, familiarAt, secureAt) {
+    var f = Number(familiarAt), s = Number(secureAt);
+    if (!Number.isInteger(f) || !Number.isInteger(s) || f < 1 || s <= f || s > 50)
+      return { error: "Familiar must be a whole number from 1 up, and secure must be higher than familiar (at most 50)." };
+    var oldCfg = cfgOf(state.settings), newCfg = { familiarAt: f, secureAt: s };
+    var rank = { "new": 0, seen: 1, familiar: 2, secure: 3 }, raised = 0;
+    Object.keys(state.words).forEach(function (id) {
+      var rec = state.words[id], before = statusOf(rec, oldCfg), after = statusOf(rec, newCfg);
+      if (rank[after] < rank[before]) { rec.clean = Math.max(rec.clean, before === "secure" ? s : f); raised++; }
+    });
+    state.settings.familiarAt = f;
+    state.settings.secureAt = s;
+    return { raised: raised };
+  }
 
   // Manual override: set counters to match the chosen status.
   function setStatus(state, id, status, cfg) {
@@ -248,7 +282,7 @@
     PUNCT: PUNCT, DEFAULT_CFG: DEFAULT_CFG, BANDS: BANDS, CATS: CATS, STATUSES: STATUSES,
     parseLexicon: parseLexicon, levelLabel: levelLabel, tokenize: tokenize,
     buildCharDict: buildCharDict, charReadings: charReadings, wordsContaining: wordsContaining,
-    statusOf: statusOf, isKnownStatus: isKnownStatus, newState: newState, statusById: statusById, isKnown: isKnown,
+    statusOf: statusOf, isKnownStatus: isKnownStatus, newState: newState, parseSavedState: parseSavedState, changeThresholds: changeThresholds, statusById: statusById, isKnown: isKnown,
     setStatus: setStatus, bulkSet: bulkSet, applyBaseline: applyBaseline, newSession: newSession, lookup: lookup, undoLookup: undoLookup,
     uniqueWordIds: uniqueWordIds, finishText: finishText, coverage: coverage, bandOf: bandOf, ymd: ymd, streak: streak,
   };

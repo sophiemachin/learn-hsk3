@@ -158,3 +158,37 @@ button.small { min-height: 0; padding: 2px 8px; vertical-align: middle; }
 .wtags { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .pill.st-new { color: var(--muted); } .pill.st-seen { color: var(--stretch); }
 .pill.st-familiar { color: var(--comfortable); } .pill.st-secure { color: var(--easy); }
+
+/* step 9c: progress tab */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 8px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.tnum { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+.tlab { font-weight: 600; }
+.psub { font-size: 1.1rem; margin: 20px 0 8px; }
+.bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--line); }
+.seg { display: block; height: 100%; }
+.plegend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0; }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.plist { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 4px 14px; }
+.prow { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.prow:last-child { border-bottom: 0; }
+.pnum { font-weight: 600; }
+.lrow { margin: 0 0 14px; }
+.lhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+
+.thresh { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; }
+.thresh label { display: inline-flex; align-items: center; gap: 6px; }
+.thresh input { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; width: 4.5rem; min-height: 40px; }
+.backup { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.backup .btn { display: inline-flex; align-items: center; }
+
+/* step 10a1: bigger tap targets on phones and touch screens */
+@media (pointer: coarse), (max-width: 600px) {
+  .linkbtn { min-height: 40px; padding: 8px 4px; }
+  .chip { min-height: 36px; padding: 6px 12px; }
+}
+
+/* step 9b: bulk set */
+.bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; padding: 10px 12px; background: var(--soft); border-radius: 12px; }
+.bulk select { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; min-height: 36px; max-width: 100%; }

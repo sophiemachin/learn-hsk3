@@ -194,7 +194,7 @@
 
   // ---------- Words tab ----------
   // Filters live in memory only (they reset on reload): none selected in a group means "show all".
-  var wf = { q: "", status: [], level: [] }, onWords = false;
+  var wf = { q: "", status: [], level: [], bulkScope: "shown", bulkStatus: "familiar" }, onWords = false;
   var WLEVELS = [[1, "HSK 1"], [2, "HSK 2"], [3, "HSK 3"], [4, "Beyond"]];
   function plain(s) { return String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "").toLowerCase(); }
   function toggleIn(arr, v) { var i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); else arr.push(v); }
@@ -209,10 +209,40 @@
     });
   }
 
+  // Bulk set: scope is "shown" (whatever the search and filters currently show) or a level number.
+  function bulkIds() {
+    if (wf.bulkScope === "shown") return filteredWords().map(function (w) { return w.id; });
+    var lv = parseInt(wf.bulkScope, 10);
+    return lex.words.filter(function (w) { return w.level === lv; }).map(function (w) { return w.id; });
+  }
+  function bulkHtml() {
+    var scopes = [["shown", "Words shown below"]].concat(WLEVELS.map(function (l) { return [String(l[0]), "All " + l[1] + " words"]; }));
+    var so = scopes.map(function (s) { return '<option value="' + s[0] + '"' + (s[0] === wf.bulkScope ? " selected" : "") + ">" + s[1] + "</option>"; }).join("");
+    var st = C.STATUSES.map(function (s) { return '<option value="' + s + '"' + (s === wf.bulkStatus ? " selected" : "") + ">" + cap(s) + "</option>"; }).join("");
+    return '<div class="bulk"><span class="muted">Mark</span>' +
+      '<select id="bulkScope" aria-label="Which words">' + so + "</select>" +
+      '<span class="muted">as</span>' +
+      '<select id="bulkStatus" aria-label="New status">' + st + "</select>" +
+      '<button id="bulkApply">Apply</button></div>';
+  }
+  function applyBulk() {
+    var ids = bulkIds(), s = wf.bulkStatus;
+    if (!ids.length) { toast("No words to change. Adjust the search or filters first."); return; }
+    var msg = "Mark " + plural(ids.length, "word") + " as " + cap(s) + "?" +
+      (s === "new" ? " This also clears their reading history." : " This replaces their current status.");
+    if (!confirm(msg)) return;
+    C.bulkSet(state, ids, s, cfg());
+    save();
+    toast("Marked " + plural(ids.length, "word") + " as " + cap(s) + ".");
+    renderWords();
+  }
+
   function renderWordList() {
     var box = $("#wlist");
     if (!box) return;
     var list = filteredWords(), MAX = 150;
+    var bs = $("#bulkScope");
+    if (bs) bs.options[0].textContent = "Words shown below (" + list.length + ")";
     var rows = list.slice(0, MAX).map(function (w) {
       var s = statusOf(w.id);
       return '<button class="wrow" data-word="' + esc(w.id) + '">' +
@@ -251,6 +281,7 @@
       '<input id="wq" class="wsearch" type="search" placeholder="Search hanzi, pinyin or English" aria-label="Search words" value="' + esc(wf.q) + '" autocomplete="off">' +
       '<div class="filters"><div class="frow" role="group" aria-label="Filter by status">' + sch + "</div>" +
       '<div class="frow frow2" role="group" aria-label="Filter by level">' + lch + "</div></div>" +
+      bulkHtml() +
       '<p class="muted" id="wcount"></p><div class="wlist" id="wlist"></div><p class="muted fnote" id="wmore"></p>';
     renderWordList();
   }
@@ -258,13 +289,125 @@
   view.addEventListener("input", function (e) {
     if (e.target.id === "wq") { wf.q = e.target.value; renderWordList(); }
   });
+  view.addEventListener("change", function (e) {
+    if (e.target.id === "bulkScope") wf.bulkScope = e.target.value;
+    else if (e.target.id === "bulkStatus") wf.bulkStatus = e.target.value;
+  });
   view.addEventListener("click", function (e) {
     var t = e.target.closest ? e.target : null;
     if (!t) return;
     var ws = t.closest("[data-wstatus]"), wl = t.closest("[data-wlevel]"), wr = t.closest("[data-word]");
-    if (ws) { toggleIn(wf.status, ws.dataset.wstatus); renderWords(); }
+    if (t.closest("#bulkApply")) applyBulk();
+    else if (ws) { toggleIn(wf.status, ws.dataset.wstatus); renderWords(); }
     else if (wl) { toggleIn(wf.level, parseInt(wl.dataset.wlevel, 10)); renderWords(); }
     else if (wr) showWord(wr.dataset.word);
+  });
+
+  // ---------- Progress tab ----------
+  var STATUS_VAR = { "new": "--line", seen: "--stretch", familiar: "--comfortable", secure: "--easy" };
+  function barHtml(c, total, label) {
+    var segs = C.STATUSES.map(function (s) {
+      var w = total ? (c[s] || 0) / total * 100 : 0;
+      return w ? '<span class="seg" style="width:' + w + "%;background:var(" + STATUS_VAR[s] + ')"></span>' : "";
+    }).join("");
+    return '<div class="bar" role="img" aria-label="' + esc(label) + '">' + segs + "</div>";
+  }
+  function renderProgress() {
+    current = null; session = null;
+    var total = lex.words.length, all = { "new": 0, seen: 0, familiar: 0, secure: 0 }, byLevel = {};
+    lex.words.forEach(function (w) {
+      var s = statusOf(w.id), L = byLevel[w.level] || (byLevel[w.level] = { n: 0, c: { "new": 0, seen: 0, familiar: 0, secure: 0 } });
+      all[s]++; L.n++; L.c[s]++;
+    });
+    var known = all.familiar + all.secure;
+    var readIds = Object.keys(state.reads), readings = 0;
+    readIds.forEach(function (k) { readings += state.reads[k].n; });
+    var day = state.days[today()] || { texts: 0, words: 0 };
+    var streak = C.streak(state, today());
+    function tile(num, label, sub) {
+      return '<div class="tile"><div class="tnum">' + num + '</div><div class="tlab">' + label + "</div>" +
+        (sub ? '<div class="muted small-print">' + sub + "</div>" : "") + "</div>";
+    }
+    var tiles = tile(streak, "day streak",streak ? "Keep it going" : "Finish a text today to start one") +
+      tile(readIds.length + " / " + texts.length, "texts read", plural(readings, "reading") + " in total") +
+      tile(known + " / " + total, "words known", Math.floor(known / total * 100) + "% familiar or secure") +
+      tile(day.texts, day.texts === 1 ? "text today" : "texts today", plural(day.words, "word") + " practised");
+    var legend = '<p class="plegend muted">' + C.STATUSES.map(function (s) {
+      return '<span class="key"><span class="dot" style="background:var(' + STATUS_VAR[s] + ')"></span>' + cap(s) + "</span>";
+    }).join("") + "</p>";
+    var statusRows = C.STATUSES.map(function (s) {
+      return '<div class="prow"><span class="pname">' + cap(s) + '</span><span class="pnum">' + all[s] + "</span></div>";
+    }).join("");
+    var levelRows = WLEVELS.map(function (l) {
+      var L = byLevel[l[0]];
+      if (!L) return "";
+      var k = L.c.familiar + L.c.secure;
+      return '<div class="lrow"><div class="lhead"><b>' + l[1] + '</b><span class="muted">' + k + " of " + L.n + " known (" + Math.floor(k / L.n * 100) + "%)</span></div>" +
+        barHtml(L.c, L.n, l[1] + ": " + C.STATUSES.map(function (s) { return L.c[s] + " " + s; }).join(", ")) + "</div>";
+    }).join("");
+    view.innerHTML =
+      '<h1 class="ptitle">Progress</h1>' +
+      '<p class="intro muted">How your reading is going. Everything here is worked out from this device.</p>' +
+      '<div class="tiles">' + tiles + "</div>" +
+      '<h2 class="psub">Words by status</h2>' + barHtml(all, total, "All words: " + C.STATUSES.map(function (s) { return all[s] + " " + s; }).join(", ")) +
+      legend + '<div class="plist">' + statusRows + "</div>" +
+      '<h2 class="psub">By HSK level</h2>' + levelRows + legend +
+      '<h2 class="psub">Settings</h2>' +
+      '<p class="muted">A word becomes <b>familiar</b> after this many readings without a lookup, and <b>secure</b> after more. Changing these never lowers a word you already have.</p>' +
+      '<div class="thresh"><label>Familiar after <input id="fAt" type="number" inputmode="numeric" min="1" max="49" value="' + cfg().familiarAt + '"></label>' +
+      '<label>Secure after <input id="sAt" type="number" inputmode="numeric" min="2" max="50" value="' + cfg().secureAt + '"></label>' +
+      '<button id="thSave" class="primary">Save</button><button id="thReset">Reset to 3 and 8</button></div>' +
+      '<h2 class="psub">Back up your progress</h2>' +
+      '<p class="muted">Your progress lives only in this browser. Save a copy to move it to another device or keep it safe. Importing replaces what is here.</p>' +
+      '<div class="backup"><button id="exportBtn">Export progress</button>' +
+      '<label class="btn" for="importFile">Import progress…</label>' +
+      '<input type="file" id="importFile" accept=".json,application/json" hidden></div>';
+  }
+
+  function exportProgress() {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "hsk3-reader-progress-" + today() + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    toast("Progress exported.");
+  }
+  function importProgress(file) {
+    var rd = new FileReader();
+    rd.onerror = function () { toast("Couldn't read that file."); };
+    rd.onload = function () {
+      var r = C.parseSavedState(String(rd.result));
+      if (r.error) { toast(r.error); return; }
+      var n = Object.keys(r.state.words).length;
+      if (!confirm("Replace the progress on this device with this file (" + plural(n, "word record") + ")? This can't be undone.")) return;
+      state = r.state;
+      var s = state.settings;
+      ui.pinyin = s.pinyin || "on"; ui.fs = s.fs || 1.7; ui.hl = s.hl !== false;
+      save(); renderProgress();
+      toast("Progress imported.");
+    };
+    rd.readAsText(file);
+  }
+  function saveThresholds(f, s) {
+    var r = C.changeThresholds(state, f, s);
+    if (r.error) { toast(r.error); return; }
+    save(); renderProgress();
+    toast("Saved: familiar after " + state.settings.familiarAt + ", secure after " + state.settings.secureAt + "." +
+      (r.raised ? " " + plural(r.raised, "word") + " kept at their current status." : ""));
+  }
+  view.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target : null;
+    if (!t) return;
+    if (t.closest("#exportBtn")) exportProgress();
+    else if (t.closest("#thSave")) saveThresholds($("#fAt").value, $("#sAt").value);
+    else if (t.closest("#thReset")) saveThresholds(C.DEFAULT_CFG.familiarAt, C.DEFAULT_CFG.secureAt);
+  });
+  view.addEventListener("change", function (e) {
+    if (e.target.id !== "importFile") return;
+    var f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (f) importProgress(f);
   });
 
   // ---------- Reader ----------
@@ -470,10 +613,12 @@
     onWords = false;
     if (h.indexOf("text/") === 0) renderReader(h.slice(5));
     else if (h === "words") renderWords();
+    else if (h === "progress") renderProgress();
     else renderLibrary();
+    var page = h === "words" || h === "progress" ? h : "texts";
     var links = document.querySelectorAll("[data-nav]");
     for (var i = 0; i < links.length; i++) {
-      var on = links[i].dataset.nav === (h === "words" ? "words" : "texts");
+      var on = links[i].dataset.nav === page;
       if (on) links[i].setAttribute("aria-current", "page"); else links[i].removeAttribute("aria-current");
     }
     window.scrollTo(0, 0);
