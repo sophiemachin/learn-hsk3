@@ -109,7 +109,7 @@ Next (each one small; do one at a time):
 - [x] 9e. Settings: familiar / secure thresholds.
 - [x] 10a. Playwright click-through at desktop width (1280px); fix only what is broken.
 - [x] 10a1. Playwright click-through at phone width (390px); fix only what is broken.
-- [ ] 10b. Rewrite README (GitHub Pages steps, adding a text, `node tools/validate.js`, data caveats). Final send.
+- [x] 10b. Rewrite README (GitHub Pages steps, adding a text, `node tools/validate.js`, data caveats). Final send.
 
 ## Known caveats to repeat in the README
 
